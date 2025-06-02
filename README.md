@@ -58,7 +58,23 @@ pip install -r requirements.txt
 
 确保模型文件位于 `models/Qwen2.5-VL-3B-Instruct/` 目录下。如果没有本地模型，可以：
 
+```bash
+# 创建模型目录
+mkdir -p models
+```
+
 1. 从 [Hugging Face](https://huggingface.co/Qwen/Qwen2.5-VL-3B-Instruct) 下载
+
+```bash
+# 使用 huggingface-hub 下载（推荐）
+pip install huggingface-hub
+huggingface-cli download Qwen/Qwen2.5-VL-3B-Instruct --local-dir models/Qwen2.5-VL-3B-Instruct
+
+# 或者使用 git lfs
+git lfs install
+git clone https://huggingface.co/Qwen/Qwen2.5-VL-3B-Instruct models/Qwen2.5-VL-3B-Instruct
+```
+
 2. 或修改代码中的模型路径为在线地址
 
 ## 使用方法
