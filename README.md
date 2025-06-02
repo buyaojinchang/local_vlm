@@ -1,12 +1,13 @@
-# Local VLM (Vision Language Model)
+# Local VLM (Vision Language Model) - 智能图像文字处理工具
 
-这是一个基于 Qwen2.5-VL-3B-Instruct 模型的本地视觉语言模型项目，支持图像和文本的多模态处理。
+这是一个基于 Qwen2.5-VL-3B-Instruct 模型的本地视觉语言模型项目，专注于图像文字识别和多模态处理。
 
 ## 项目结构
 
 ```
 local_vlm/
-├── image_test.py          # 主要测试脚本
+├── image_test.py          # 基础测试脚本
+├── document_process.py    # 文档分析工具
 ├── requirements.txt       # 项目依赖文件
 ├── README.md             # 项目说明文档
 └── models/
@@ -61,11 +62,7 @@ pip install -r requirements.txt
 ```bash
 # 创建模型目录
 mkdir -p models
-```
 
-1. 从 [Hugging Face](https://huggingface.co/Qwen/Qwen2.5-VL-3B-Instruct) 下载
-
-```bash
 # 使用 huggingface-hub 下载（推荐）
 pip install huggingface-hub
 huggingface-cli download Qwen/Qwen2.5-VL-3B-Instruct --local-dir models/Qwen2.5-VL-3B-Instruct
@@ -75,36 +72,44 @@ git lfs install
 git clone https://huggingface.co/Qwen/Qwen2.5-VL-3B-Instruct models/Qwen2.5-VL-3B-Instruct
 ```
 
-2. 或修改代码中的模型路径为在线地址
-
 ## 使用方法
 
-### 基本使用
+### 1. 文档分析工具 (推荐)
+
+专门用于图像文字识别和文档处理的工具。
 
 ```bash
-# 使用默认参数运行（图像描述）
-python image_test.py
+# 基本文字识别
+python document_process.py --input-path "document.jpg"
 
-# 查看所有可用参数
-python image_test.py --help
+# 自定义识别任务
+python document_process.py --input-path "photo.png" --task "识别这张图片中的所有文字"
+
+# 保存为文本格式
+python document_process.py --input-path "scan.jpg" --output-format txt --task "提取文档内容"
 ```
 
-### 命令行参数
+#### 参数说明
 
-使用 `tyro` 库提供的命令行界面：
+| 参数 | 类型 | 默认值 | 描述 |
+|------|------|--------|------|
+| `--input-path` | `str` | 必需 | 图像文件路径（jpg、png等） |
+| `--output-format` | `"json"` \| `"txt"` | `"json"` | 输出格式 |
+| `--task` | `str` | 默认文字提取任务 | 处理任务描述 |
+
+### 2. 基础测试工具
+
+通用的图像和文本处理工具。
 
 ```bash
-# 处理图像内容（默认）
-python image_test.py --content-type image --image-url "https://example.com/image.jpg" --text-content "描述这张图片"
-
-# 处理本地图像文件
-python image_test.py --content-type image --image-url "path/to/your/image.jpg" --text-content "这张图片里有什么？"
+# 图像描述
+python image_test.py --content-type image --image-url "photo.jpg" --text-content "描述这张图片"
 
 # 纯文本对话
 python image_test.py --content-type text --text-content "你好，请介绍一下你自己"
 ```
 
-### 参数说明
+#### 参数说明
 
 | 参数 | 类型 | 默认值 | 描述 |
 |------|------|--------|------|
@@ -112,31 +117,118 @@ python image_test.py --content-type text --text-content "你好，请介绍一�
 | `--image-url` | `str` | Qwen 官方示例图片 | 图像URL或本地路径 |
 | `--text-content` | `str` | `"Describe this image."` | 文本提示内容 |
 
+## 主要功能
+
+### 📄 图像文字识别
+- **文档扫描**: 识别扫描文档中的文字内容
+- **图片文字提取**: 从照片中提取文字信息
+- **手写识别**: 对清晰手写文字有一定识别能力
+
+### 🔧 支持的文件格式
+- **图像格式**: JPG, PNG, BMP, TIFF, WebP
+- **输出格式**: JSON, TXT
+- **最大文件大小**: 建议不超过 16MB
+
+### 💬 文本处理
+- **对话交互**: 支持纯文本对话
+- **内容分析**: 图像内容描述和分析
+- **自定义任务**: 灵活的任务定制
+
+## 使用示例
+
+### 文字识别示例
+
+```bash
+# 识别发票内容
+python document_process.py --input-path "invoice.jpg" --task "提取发票中的关键信息"
+
+# 识别名片文字
+python document_process.py --input-path "business_card.png" --task "识别名片上的姓名、电话和邮箱"
+
+# 识别手写笔记
+python document_process.py --input-path "notes.jpg" --task "识别手写笔记内容" --output-format txt
+```
+
 ### 编程方式使用
 
 ```python
+from document_process import analyze_document
+
+# 文字识别
+result = analyze_document(
+    input_path="document.jpg",
+    output_format="json",
+    task="提取图片中的所有文字"
+)
+
+# 从图像测试工具导入
 from image_test import main
 
 # 图像描述
 main(
     content_type="image",
-    image_url="https://example.com/image.jpg",
+    image_url="photo.jpg",
     text_content="请详细描述这张图片"
-)
-
-# 纯文本对话
-main(
-    content_type="text", 
-    text_content="你好，请介绍一下你自己"
 )
 ```
 
+## 输出示例
+
+### JSON 格式输出
+```json
+{
+  "timestamp": "2025-06-02T20:30:45",
+  "input_file": "document.jpg",
+  "task": "请分析这个文档并提取其中的文字内容",
+  "result": "这是一份重要文档，包含以下内容：\n标题：会议纪要\n日期：2025年6月2日\n内容：讨论了项目进展和下一步计划..."
+}
+```
+
+### TXT 格式输出
+```text
+处理时间: 2025-06-02T20:30:45
+输入文件: document.jpg
+处理任务: 请分析这个文档并提取其中的文字内容
+结果:
+这是一份重要文档，包含以下内容：
+标题：会议纪要
+日期：2025年6月2日
+内容：讨论了项目进展和下一步计划...
+```
+
+## 系统要求
+
+### 硬件要求
+- **GPU**: 推荐使用 CUDA 兼容的 GPU（至少 8GB 显存）
+- **内存**: 推荐至少 16GB RAM
+- **存储**: 模型文件约占用 6-8GB 空间
+
+### 软件要求
+- Python 3.8+
+- CUDA 11.8+ (如使用 GPU)
+- Linux/macOS/Windows
+
+## 优化建议
+
+### 提高识别准确率
+1. **图像质量**: 使用高分辨率、清晰的图像
+2. **光线条件**: 确保图像光线充足，对比度良好
+3. **文字大小**: 文字应该足够大，建议至少 12pt
+
+### 性能优化
+1. **GPU 加速**: 使用 CUDA GPU 可显著提升处理速度
+2. **图像尺寸**: 适当调整图像尺寸可以平衡速度和准确率
+3. **批量处理**: 对于大量文档，可以编写批处理脚本
+
 ## 依赖管理
 
+### 主要依赖
+- **transformers**: Hugging Face 模型库
+- **torch/torchvision**: PyTorch 深度学习框架  
+- **qwen-vl-utils**: Qwen 视觉处理工具包
+- **tyro**: 命令行参数解析
+
 ### 更新依赖
-
-如果添加了新的依赖包，记得更新 requirements.txt：
-
 ```bash
 # 使用 uv
 uv pip freeze > requirements.txt
@@ -145,90 +237,35 @@ uv pip freeze > requirements.txt
 pip freeze > requirements.txt
 ```
 
-### 主要依赖说明
-
-- **transformers**: Hugging Face 模型库
-- **torch/torchvision**: PyTorch 深度学习框架
-- **qwen-vl-utils**: Qwen 视觉处理工具包
-- **tyro**: 命令行参数解析
-- **accelerate**: 模型加速库
-
-## 模型信息
-
-本项目使用的是 **Qwen2.5-VL-3B-Instruct** 模型，这是一个强大的视觉语言模型，具有以下特点：
-
-- **多模态理解**：支持图像、视频和文本的联合处理
-- **高精度识别**：能够识别图像中的物体、文字、图表等
-- **长文本处理**：支持最长 32,768 tokens 的上下文
-- **结构化输出**：支持生成 JSON 等结构化格式的输出
-
-更多模型信息请参考：[models/Qwen2.5-VL-3B-Instruct/README.md](models/Qwen2.5-VL-3B-Instruct/README.md)
-
-## 功能特性
-
-### 支持的输入格式
-
-1. **图像处理**
-   - 网络图片 URL
-   - 本地图片文件路径  
-   - Base64 编码图片
-
-2. **视频处理**（如需要）
-   - 本地视频文件
-   - 网络视频 URL
-   - 视频帧序列
-
-3. **文本处理**
-   - 纯文本对话
-   - 多轮对话
-
-### 主要能力
-
-- 🖼️ **图像理解**：描述图像内容、识别物体、分析场景
-- 📊 **文档分析**：处理图表、表格、文档扫描件
-- 🎯 **视觉定位**：生成边界框和坐标点
-- 📝 **结构化输出**：支持 JSON 格式的结构化数据提取
-- 💬 **对话交互**：支持基于视觉内容的多轮对话
-
-## 系统要求
-
-### 硬件要求
-
-- **GPU**: 推荐使用 CUDA 兼容的 GPU（至少 8GB 显存）
-- **内存**: 推荐至少 16GB RAM
-- **存储**: 模型文件约占用 6-8GB 空间
-
-### 软件要求
-
-- Python 3.8+
-- CUDA 11.8+ (如使用 GPU)
-- Linux/macOS/Windows
-
 ## 故障排除
 
 ### 常见问题
 
-1. **导入错误**：确保已正确安装所有依赖
+1. **导入错误**: 确保已正确安装所有依赖
    ```bash
    pip install -r requirements.txt
    ```
 
-2. **CUDA 内存不足**：减少批处理大小或使用 CPU
+2. **CUDA 内存不足**: 使用 CPU 模式
    ```python
-   # 在代码中修改 device_map
-   device_map="cpu"  # 或 "auto"
+   device_map="cpu"
    ```
 
-3. **模型文件缺失**：检查模型路径或下载完整模型
+3. **识别效果差**: 检查图像质量和文字清晰度
+
+4. **文件格式不支持**: 确保使用 JPG、PNG 等支持的格式
 
 ## 许可证
 
-本项目使用的 Qwen2.5-VL 模型遵循 Qwen Research License Agreement。详情请参考 [models/Qwen2.5-VL-3B-Instruct/LICENSE](models/Qwen2.5-VL-3B-Instruct/LICENSE)。
+本项目使用的 Qwen2.5-VL 模型遵循 Qwen Research License Agreement。
 
 ## 参考资料
 
 - [Qwen2.5-VL 官方博客](https://qwenlm.github.io/blog/qwen2.5-vl/)
-- [Qwen2.5-VL GitHub 仓库](https://github.com/QwenLM/Qwen2.5-VL)
 - [Hugging Face 模型页面](https://huggingface.co/Qwen/Qwen2.5-VL-3B-Instruct)
 - [tyro 文档](https://brentyi.github.io/tyro/)
+
+## 贡献与支持
+
+欢迎提交 Issue 和 Pull Request 来改进这个项目！如果这个工具对您有帮助，请给项目点个星标 ⭐
 
