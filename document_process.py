@@ -8,10 +8,16 @@ from image_test import main as vlm_process
 def analyze_document(
     input_path: str,
     output_format: Literal["json", "txt"] = "json",
-    task: str = "请分析这个文档并提取其中的文字内容"
+    description: bool = False,
+    extract: bool = False
 ):
     """简单的文档分析工具 - 支持图像文字识别和文本处理"""
-    
+    if description:
+        task = "please describe the image in detail"
+    if extract:
+        task = "please extract all text from the image"
+    else:
+        NotImplementedError("请至少选择一个任务：描述或提取文本")
     # 调用 VLM 处理
     result = vlm_process(
         content_type="image",
