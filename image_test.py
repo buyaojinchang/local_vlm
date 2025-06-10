@@ -64,6 +64,6 @@ def main(
         generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False
     )
     print(output_text)
-
+    return output_text
 if __name__ == "__main__":
-    tyro.cli(main)
+    result = tyro.cli(main)
